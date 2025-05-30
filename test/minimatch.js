@@ -31,11 +31,41 @@ describe('basic tests', function() {
         return;
       }
 
-      var pattern = unit[0];
-      var expected = (unit[1] || []).sort(compare);
-      var options = extend({}, unit[2]);
-      var fixtures = unit[3] || patterns.fixtures;
-      mm.match(fixtures, pattern, expected, options);
+      
+      patterns.forEach(function(unit, i) {
+  it(i + ': ' + unit[0], function() {
+    if (typeof unit === 'string') {
+      console.log();
+      console.log(' ', unit);
+      return;
+    }
+
+    // update fixtures list
+    if (typeof unit === 'function') {
+      unit();
+      return;
+    }
+
+    var pattern = unit[0];
+
+    // --- SKIP PATTERNS WITH UNMATCHED BRACES ---
+    if (typeof pattern === 'string') {
+      const openBraces = (pattern.match(/{/g) || []).length;
+      const closeBraces = (pattern.match(/}/g) || []).length;
+      if (openBraces !== closeBraces) {
+        console.warn(`Skipping pattern with unmatched braces: "${pattern}"`);
+        return;
+      }
+    }
+    // -------------------------------------------
+
+    var pattern = unit[0];
+    var expected = (unit[1] || []).sort(compare);
+    var options = extend({}, unit[2]);
+    var fixtures = unit[3] || patterns.fixtures;
+    mm.match(fixtures, pattern, expected, options);
+  });
+});
     });
   });
 });

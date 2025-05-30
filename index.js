@@ -619,14 +619,83 @@ micromatch.braces = function(pattern, options) {
   if (typeof pattern !== 'string' && !Array.isArray(pattern)) {
     throw new TypeError('expected pattern to be an array or string');
   }
-
+ 
+  // NEW: Input-size check to prevent unbounded patterns from causing ReDoS
+  // For example, we limit the pattern to 10,000 characters; adjust as needed.
+  const MAX_PATTERN_LENGTH = 10000;
+  if (pattern && pattern.length > MAX_PATTERN_LENGTH) {
+    throw new Error(
+      `Pattern exceeds maximum allowed length of ${MAX_PATTERN_LENGTH} characters, ` +
+      `potentially causing ReDoS.`
+    );
+  }
+ 
+  // --------------------------------------------------------------------------
+  // NEW HELPER FUNCTIONS - added to detect undeclared braces or suspicious
+  // subpatterns that might cause backtracking issues even for smaller inputs.
+  // --------------------------------------------------------------------------
+  function hasBalancedBraces(str) {
+    let depth = 0;
+    for (let i = 0; i < str.length; i++) {
+      if (str[i] === '{') {
+        depth++;
+      } else if (str[i] === '}') {
+        if (depth === 0) {
+          return false; // More closing braces than opening
+        }
+        depth--;
+      }
+    }
+    return depth === 0; // True if all opened braces were closed
+  }
+ 
+  function hasSuspiciousPattern(str) {
+    // Checks for “.*” inside braces, which can trigger performance issues
+    // in certain older micromatch expansions.
+    // If found, we treat it as potentially dangerous.
+    const braceRegex = /\{([^}]*)\}/g;
+    let match;
+    while ((match = braceRegex.exec(str)) !== null) {
+      // If the content inside braces includes '.*', flag it
+      if (/\.\*/.test(match[1])) {
+        return true;
+      }
+    }
+    return false;
+  }
+ 
+  // --------------------------------------------------------------------------
+  // ADDITIONAL CHECKS FOR SMALLER PATTERNS THAT MAY STILL CAUSE ReDoS:
+  // --------------------------------------------------------------------------
+  if (!hasBalancedBraces(pattern)) {
+    throw new Error(
+      `Unmatched or misordered braces found in pattern: "${pattern}". ` +
+      `Verify that all '{' have matching '}'.`
+    ); 
+  
+  }
+ 
+   if (hasSuspiciousPattern(pattern)) {
+    throw new Error(
+      `Potential ReDoS risk: a ".*" sequence was detected within braces in "${pattern}". ` +
+      `Consider removing or escaping ".*" inside braces.`
+    );
+  } 
+  // --------------------------------------------------------------------------
+ 
   function expand() {
-    if (options && options.nobrace === true || !/\{.*\}/.test(pattern)) {
+    const isNoBrace = options && options.nobrace === true;
+    const hasBraceSyntax = /\{.*\}/.test(pattern);
+ 
+    // If micromatch is configured to skip brace expansion, or pattern lacks braces:
+    if (isNoBrace || !hasBraceSyntax) {
       return utils.arrayify(pattern);
     }
+    // Otherwise, run the existing brace expansion library
     return braces(pattern, options);
   }
-
+ 
+  // Memoize the result for performance
   return memoize('braces', pattern, options, expand);
 };
 

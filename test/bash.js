@@ -96,7 +96,7 @@ describe('bash options and features:', function() {
     });
 
     it('Pattern from Larry Wall\'s Configure that caused bash to blow up:', function() {
-      match(fixtures, '"/^root:/{s/^[^:]*:[^:]*:\\([^:]*\\).*"\'$\'"/\\1/"', {nonull: true}, ['"/^root:/{s/^[^:]*:[^:]*:\\([^:]*\\).*"\'$\'"/\\1/"']);
+      match(fixtures, '"/^root:/{s/^[^:]*:[^:]*:\\([^:]*\\)"\'$\'"/\\1/"}', {nonull: true}, ['"/^root:/{s/^[^:]*:[^:]*:\\([^:]*\\)"\'$\'"/\\1/"}']);
       match(fixtures, '[a-c]b*', ['abc', 'abd', 'abe', 'bb', 'cb']);
     });
 

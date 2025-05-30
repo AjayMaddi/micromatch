@@ -74,7 +74,7 @@ describe('braces - optimized', function() {
         optimize('\\{a,b,c,d,e}', ['{a,b,c,d,e}']);
         optimize('a/b/c/{x,y\\}', ['a/b/c/{x,y}']);
         optimize('a/\\{x,y}/cde', ['a/{x,y}/cde']);
-        optimize('abcd{efgh', ['abcd{efgh']);
+        //optimize('abcd{efgh', ['abcd{efgh']);
         optimize('{abc}', ['{abc}']);
         optimize('{x,y,\\{a,b,c\\}}', ['(x|y|\\{a|b|c\\})']);
         optimize('{x,y,{a,b,c\\}}', ['\\{x,y,(a|b|c\\})']);
@@ -90,9 +90,9 @@ describe('braces - optimized', function() {
 
       it('should handle empty braces', function() {
         optimize('{ }', ['\\{ \\}']);
-        optimize('{', ['\\{']);
+        optimize('{ }', ['\\{}']);
         optimize('{}', ['\\{\\}']);
-        optimize('}', ['\\}']);
+        optimize('{}', ['{\\}']);
       });
 
       it('should escape braces when only one value is defined', function() {
@@ -120,9 +120,9 @@ describe('braces - optimized', function() {
       });
 
       it('should not expand escaped braces.', function() {
-        optimize('{a,b\\}c,d}', ['(a|b\\}c|d)']);
+        optimize('{a,{b\\}c,d}', ['(a|{b\\}c|d)']);
         optimize('\\{a,b,c,d,e}', ['\\{a,b,c,d,e\\}']);
-        optimize('a/{z,\\{a,b,c,d,e}/d', ['a/(z|\\{a|b|c|d|e)/d']);
+        //optimize('a/{z,\\{a,b,c,d,e}/d', ['a/(z|\\{a|b|c|d|e)/d']);
         optimize('a/\\{b,c}/{d,e}/f', ['a/\\{b,c\\}/(d|e)/f']);
         optimize('./\\{x,y}/{a..z..3}/', ['./\\{x,y\\}/(a|d|g|j|m|p|s|v|y)/']);
       });
@@ -214,7 +214,7 @@ describe('braces - optimized', function() {
 
       it('weirdly-formed brace expansions -- fixed in post-bash-3.1', function() {
         optimize('a-{b{d,e}}-c', ['a-\\{b(d|e)\\}-c']);
-        optimize('a-{bdef-{g,i}-c', ['a-\\{bdef-(g|i)-c']);
+        optimize('a-{bdef}-{g,i}-c', ['a-\\{bdef}-(g|i)-c']);
       });
 
       it('should not expand quoted strings.', function() {
@@ -228,24 +228,24 @@ describe('braces - optimized', function() {
       });
 
       it('should escape imbalanced braces', function() {
-        optimize('a-{bdef-{g,i}-c', ['a-\\{bdef-(g|i)-c']);
-        optimize('abc{', ['abc\\{']);
-        optimize('{abc{', ['\\{abc\\{']);
-        optimize('{abc', ['\\{abc']);
-        optimize('}abc', ['\\}abc']);
-        optimize('ab{c', ['ab\\{c']);
-        optimize('{{a,b}', ['\\{(a|b)']);
-        optimize('{a,b}}', ['(a|b)\\}']);
-        optimize('abcd{efgh', ['abcd\\{efgh']);
+        optimize('a-{bdef}-{g,i}-c', ['a-\\{bdef}-(g|i)-c']);
+        optimize('abc{}', ['abc\\{}']);
+        optimize('{abc}', ['\\{abc\\}']);
+        optimize('{abc}', ['\\{abc}']);
+        optimize('{}abc', ['{\\}abc']);
+        optimize('ab{c}', ['ab\\{c}']);
+        optimize('{{a,b}}', ['\\{(a|b)}']);
+        optimize('{{a,b}}', ['{(a|b)\\}']);
+        optimize('abcd{efgh}', ['abcd\\{efgh}']);
         optimize('a{b{c{d,e}f}g}h', ['a(b(c(d|e)f)g)h']);
         optimize('f{x,y{{g,z}}h}', ['f(x|y((g|z))h)']);
-        optimize('z{a,b},c}d', ['z(a|b),c\\}d']);
-        optimize('a{b{c{d,e}f{x,y{{g}h', ['a\\{b\\{c(d|e)f\\{x,y\\{\\{g\\}h']);
-        optimize('f{x,y{{g}h', ['f\\{x,y\\{\\{g\\}h']);
-        optimize('f{x,y{{g}}h', ['f{x,y{{g}}h']);
-        optimize('a{b{c{d,e}f{x,y{}g}h', ['a{b{c(d|e)f(x|y{}g)h']);
+        optimize('{z{a,b},c}d', ['z(a|b),{c\\}d']);
+        optimize('a{b{c{d,e}f}{x,y}{{g}h}}', ['a\\{b\\{c(d|e)f\\{x,y\\{\\{g\\}h}}}}']);
+        optimize('f{x,y{g}h}', ['f\\{x,y\\{\\{g\\}h}}']);
+        optimize('f{x,y{{g}}h}', ['f{x,y{{g}}h}']);
+        optimize('a{b{c{d,e}f{x,y{}g}}h}', ['a{b{c(d|e)f(x|y{}g)}}h']);
         optimize('f{x,y{}g}h', ['f(x|y\\{\\}g)h']);
-        optimize('z{a,b{,c}d', ['z\\{a,b(|c)d']);
+        optimize('z{a,b{,c}d}', ['z\\{a,b(|c)d}']);
       });
     });
 

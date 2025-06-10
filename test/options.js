@@ -324,9 +324,9 @@ describe('options', function() {
         mm(['.dotfile'], '*', opts, ['.dotfile']);
         mm(['.dotfile'], '**', opts, ['.dotfile']);
         mm(['a/b', 'a/.b', '.a/b', '.a/.b'], '**', opts, ['a/b', 'a/.b', '.a/b', '.a/.b']);
-       //mm(['a/b', 'a/.b', 'a/.b', '.a/.b'], 'a/{.*,**}', opts, ['a/b', 'a/.b']);
-        //mm(['a/b', 'a/.b', 'a/.b', '.a/.b'], '{**}', {}, ['a/b']);
-       // mm(['a/b', 'a/.b', 'a/.b', '.a/.b'], '{.*,**}', opts, ['a/b', '.a/.b', 'a/.b']);
+        mm(['a/b', 'a/.b', 'a/.b', '.a/.b'], 'a/**', { dot: true }, ['a/.b', 'a/b']);
+        mm(['a/b', 'a/.b', 'a/.b', '.a/.b'], '**', {}, ['a/b']);
+        mm(['a/b', 'a/.b', 'a/.b', '.a/.b'], '**', { dot: true }, ['.a/.b', 'a/.b', 'a/b']);
         mm(['.dotfile'], '.dotfile', opts, ['.dotfile']);
         mm(['.dotfile.md'], '.*.md', opts, ['.dotfile.md']);
       });

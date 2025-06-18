@@ -644,15 +644,15 @@ micromatch.braces = (pattern, options = {}) => {
  * minimatch.
  */
 
-/**micromatch.braceExpand = function(pattern, options) {
+micromatch.braceExpand = function(pattern, options) {
   var opts = extend({}, options, {expand: true});
   return micromatch.braces(pattern, opts);
-};*/
+};
 
-micromatch.braceExpand = (pattern, options) => {
+/**micromatch.braceExpand = (pattern, options) => {
   if (typeof pattern !== 'string') throw new TypeError('Expected a string');
   return micromatch.braces(pattern, { ...options, expand: true });
-};
+};*/
 
 /**
  * Parses the given glob `pattern` and returns an array of abstract syntax

@@ -1,4 +1,4 @@
-const { braces } = require('../index.js');
+const { braces } = require('C:\\sasva\\micromatch\\index.js'); //path should be modified as per your location
 
 
 console.log("Executing payloads...");

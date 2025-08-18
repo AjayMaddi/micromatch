@@ -615,20 +615,23 @@ micromatch.makeRe = function(pattern, options) {
  * @api public
  */
 
-micromatch.braces = function(pattern, options) {
-  if (typeof pattern !== 'string' && !Array.isArray(pattern)) {
-    throw new TypeError('expected pattern to be an array or string');
-  }
 
-  function expand() {
-    if (options && options.nobrace === true || !/\{.*\}/.test(pattern)) {
-      return utils.arrayify(pattern);
-    }
-    return braces(pattern, options);
-  }
+const hasBraces = v => {
+    const index = v.indexOf('{');
+    return index > -1 && v.indexOf('}', index) > -1;
+  };
 
-  return memoize('braces', pattern, options, expand);
+
+micromatch.braces = (pattern, options = {}) => { 
+  options = options || {};
+  if (typeof pattern !== 'string') throw new TypeError('Expected a string');
+  if ((options && options.nobrace === true) || !hasBraces(pattern)) {
+    return [pattern];
+  }
+  return braces(pattern, options);
 };
+
+
 
 /**
  * Proxy to the [micromatch.braces](#method), for parity with
@@ -639,6 +642,11 @@ micromatch.braceExpand = function(pattern, options) {
   var opts = extend({}, options, {expand: true});
   return micromatch.braces(pattern, opts);
 };
+
+/**micromatch.braceExpand = (pattern, options) => {
+  if (typeof pattern !== 'string') throw new TypeError('Expected a string');
+  return micromatch.braces(pattern, { ...options, expand: true });
+};*/
 
 /**
  * Parses the given glob `pattern` and returns an array of abstract syntax
@@ -875,3 +883,4 @@ micromatch.caches = cache.caches;
  */
 
 module.exports = micromatch;
+micromatch.hasBraces=hasBraces;
